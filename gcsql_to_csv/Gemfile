@@ -1,0 +1,4 @@
+source "https://rubygems.org"
+
+gem 'google-apis-sqladmin_v1beta4'
+gem 'functions_framework', '~> 0.9'
