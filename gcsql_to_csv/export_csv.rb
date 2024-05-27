@@ -20,7 +20,7 @@ FunctionsFramework.http "export_csv" do |request|
   responses = []
 
   tables.each do |table_name, query|
-    file_name = "#{Time.now.strftime('%Y%m%d%H%M')}_#{table_name}.csv"
+    file_name = "#{table_name}.csv"
     uri = "gs://#{bucket_name}/#{file_name}"
 
     export_request = ExportContext.new(

@@ -6,7 +6,6 @@ AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
 AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
 AWS_S3_BUCKET=$AWS_S3_BUCKET
 AWS_CLI_URL="https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
-TIMESTAMP=$(date +"%Y%m%d%H%M")
 EXPORT_DIR="/app/.exports"
 TMP_DOWNLOAD_DIR="/tmp"
 INSTALL_DIR="/app/.awscli"
@@ -46,21 +45,21 @@ if ! command_exists aws ; then
 fi
 
 # Export tables to CSV
-echo "Exporting tables to CSV..."
-declare -a tables=("users" "companies" "products" "plans" "contacts" "calls" "text_messages")
-for TABLE_NAME in "${tables[@]}"; do
-  psql $DATABASE_URL -c "\copy (SELECT * FROM ${TABLE_NAME}) TO '${EXPORT_DIR}/${TIMESTAMP}_${TABLE_NAME}.csv' WITH CSV HEADER"
-  gzip "${EXPORT_DIR}/${TIMESTAMP}_${TABLE_NAME}.csv"
-done
+# echo "Exporting tables to CSV..."
+# declare -a tables=("users" "companies" "products" "plans" "contacts" "calls" "text_messages")
+# for TABLE_NAME in "${tables[@]}"; do
+#   psql $DATABASE_URL -c "\copy (SELECT * FROM ${TABLE_NAME}) TO '${EXPORT_DIR}/${TABLE_NAME}.csv' WITH CSV HEADER"
+#   gzip "${EXPORT_DIR}/${TABLE_NAME}.csv"
+# done
 
 # Variant to export everything except somes tables
-# echo "Exporting and compressing tables to CSV..."
-# declare -a exclude_tables=("users" "contacts" "calls" "text_messages")
-# tables=$(psql $DATABASE_URL -t -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public'" | grep -vFf <(printf "%s\n" "${exclude_tables[@]}"))
-# for TABLE_NAME in $tables; do
-#   psql $DATABASE_URL -c "\copy (SELECT * FROM ${TABLE_NAME}) TO '${EXPORT_DIR}/${TIMESTAMP}_${TABLE_NAME}.csv' WITH CSV HEADER"
-#   gzip "${EXPORT_DIR}/${TIMESTAMP}_${TABLE_NAME}.csv"
-# done
+echo "Exporting and compressing tables to CSV..."
+declare -a exclude_tables=("ar_metdata")
+tables=$(psql $DATABASE_URL -t -c "SELECT tablename FROM pg_tables WHERE schemaname = 'public'" | grep -vFf <(printf "%s\n" "${exclude_tables[@]}"))
+for TABLE_NAME in $tables; do
+  psql $DATABASE_URL -c "\copy (SELECT * FROM ${TABLE_NAME}) TO '${EXPORT_DIR}/${TABLE_NAME}.csv' WITH CSV HEADER"
+  gzip "${EXPORT_DIR}/${TABLE_NAME}.csv"
+done
 
 # Upload to S3
 echo "Uploading CSV files to S3..."
